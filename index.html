@@ -115,10 +115,17 @@ body{background:#000;overflow:hidden;font-family:'Courier New',monospace;width:1
 <div id="stats">
   <div><div class="sv">28</div><div class="sl">Agentes</div></div>
   <div><div class="sv">10</div><div class="sl">Escritórios</div></div>
-  <div><div class="sv">4</div><div class="sl">Providers</div></div>
+  <div><div class="sv" id="stat-events">0</div><div class="sl">Eventos</div></div>
   <div><div class="sv" id="sv">—</div><div class="sl">Sinapses/s</div></div>
+  <div><div class="sv" id="stat-cpu">—</div><div class="sl">CPU Load</div></div>
+  <div><div class="sv" id="stat-mem">—</div><div class="sl">RAM Uso</div></div>
+  <div><div class="sv" id="stat-billing">$—</div><div class="sl">Hoje</div></div>
 </div>
-<div id="live"><div id="dot"></div><span>Ativo</span></div>
+<div id="live">
+  <div id="dot"></div>
+  <div id="tel-dot" style="width:7px;height:7px;border-radius:50%;background:rgba(220,80,80,0.5);margin:0 5px;transition:all 0.3s"></div>
+  <span id="tel-label">OFFLINE</span>
+</div>
 
 <script>
 // ═══════════════════════════════════════════════════════════════════════
@@ -636,6 +643,123 @@ window.addEventListener('resize',()=>{
   ovC.width=W; ovC.height=H;
   buildScene(); initNodes();
 });
+
+// ═══════════════════════════════════════════════════════════════════════
+// TELEMETRIA REAL — WebSocket conectado ao servidor Clawdio
+// ═══════════════════════════════════════════════════════════════════════
+const WS_URL = 'wss://certified-configured-someone-fun.trycloudflare.com/ws/telemetry';
+let telWs = null;
+let telConnected = false;
+let telReconnectTimer = null;
+let synapseCount = 0;
+let lastSynapseTime = 0;
+
+// Mapa de tipos de evento para regiões cerebrais
+const EVENT_REGION_MAP = {
+  'heartbeat':      ['brainstem_L','brainstem_R'],
+  'billing_update': ['occipital_r','occipital_L'],
+  'message':        ['frontal_L','temporal_R'],
+  'agent_response': ['parietal_L','parietal_R'],
+  'model_router':   ['frontal_L','frontal_R'],
+  'gateway_event':  ['cerebellum_L','cerebellum_R'],
+  'memory_access':  ['temporal_L','temporal_R'],
+  'error':          ['brainstem_L','brainstem_R'],
+};
+
+function connectTelemetry(){
+  if(telWs && telWs.readyState < 2) return;
+  try{
+    telWs = new WebSocket(WS_URL);
+    telWs.onopen = () => {
+      telConnected = true;
+      updateStatusDot(true);
+      console.log('[CÉREBRO] Conectado ao servidor Clawdio');
+    };
+    telWs.onmessage = (e) => {
+      try{
+        const evt = JSON.parse(e.data);
+        handleTelemetryEvent(evt);
+      } catch(err){}
+    };
+    telWs.onclose = () => {
+      telConnected = false;
+      updateStatusDot(false);
+      // Reconecta em 5s
+      clearTimeout(telReconnectTimer);
+      telReconnectTimer = setTimeout(connectTelemetry, 5000);
+    };
+    telWs.onerror = () => { telWs.close(); };
+  } catch(err){
+    clearTimeout(telReconnectTimer);
+    telReconnectTimer = setTimeout(connectTelemetry, 8000);
+  }
+}
+
+function handleTelemetryEvent(evt){
+  const type = evt.type || 'heartbeat';
+  const data = evt.data || {};
+  
+  // Determina quais regiões acender
+  const regions = EVENT_REGION_MAP[type] || EVENT_REGION_MAP['heartbeat'];
+  
+  // Dispara sinapses nas regiões correspondentes
+  regions.forEach(regionId => {
+    const node = allNodes.find(n => n.id === regionId || n.id.includes(regionId.replace('_L','').replace('_R','')));
+    if(node){
+      // Adiciona burst de sinapses nessa região
+      for(let i=0;i<3;i++){
+        const target = allNodes[Math.floor(Math.random()*allNodes.length)];
+        if(target !== node) sparks.push(new Spark(node, target, true));
+      }
+      // Pulso visual no nó
+      node.realPulse = 1.0;
+    }
+  });
+  
+  // Atualiza contadores no footer
+  synapseCount++;
+  updateFooterStats(evt, data);
+}
+
+function updateStatusDot(connected){
+  const dot = document.getElementById('tel-dot');
+  const label = document.getElementById('tel-label');
+  if(dot){
+    dot.style.background = connected ? 'rgba(120,220,160,0.9)' : 'rgba(220,80,80,0.5)';
+    dot.style.boxShadow = connected ? '0 0 6px rgba(120,220,160,0.6)' : 'none';
+  }
+  if(label) label.textContent = connected ? 'LIVE' : 'OFFLINE';
+}
+
+function updateFooterStats(evt, data){
+  const el = document.getElementById('stat-events');
+  if(el) el.textContent = synapseCount;
+  if(data.loadavg){
+    const cpu = document.getElementById('stat-cpu');
+    if(cpu) cpu.textContent = data.loadavg;
+  }
+  if(data.freemem_mb){
+    const mem = document.getElementById('stat-mem');
+    if(mem) mem.textContent = Math.round((1 - data.freemem_mb/8192)*100) + '%';
+  }
+  if(evt.type === 'billing_update' && data.today !== undefined){
+    const bil = document.getElementById('stat-billing');
+    if(bil) bil.textContent = '$' + data.today;
+  }
+}
+
+// Adiciona realPulse a todos os nós
+function addRealPulseToNodes(){
+  if(typeof allNodes !== 'undefined'){
+    allNodes.forEach(n => { n.realPulse = 0; });
+  }
+}
+
+// Conecta após 1s (dá tempo de buildar a cena)
+setTimeout(() => {
+  addRealPulseToNodes();
+  connectTelemetry();
+}, 1000);
 
 // ═══════════════════════════════════════════════════════════════════════
 // START
