@@ -7,121 +7,79 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    background: #000000;
+    background: #000;
     overflow: hidden;
     font-family: 'Courier New', monospace;
-    width: 100vw;
-    height: 100vh;
+    width: 100vw; height: 100vh;
   }
   canvas { display: block; position: fixed; top: 0; left: 0; }
 
   #header {
-    position: fixed;
-    top: 22px; left: 50%;
+    position: fixed; top: 20px; left: 50%;
     transform: translateX(-50%);
-    text-align: center;
-    pointer-events: none;
-    z-index: 10;
+    text-align: center; pointer-events: none; z-index: 10;
   }
   #header h1 {
-    font-size: 11px;
-    letter-spacing: 7px;
-    color: rgba(200,220,255,0.45);
-    text-transform: uppercase;
+    font-size: 11px; letter-spacing: 7px;
+    color: rgba(210,225,255,0.38); text-transform: uppercase;
   }
   #header p {
-    font-size: 9px;
-    letter-spacing: 3px;
-    color: rgba(200,220,255,0.18);
-    margin-top: 5px;
+    font-size: 9px; letter-spacing: 3px;
+    color: rgba(210,225,255,0.15); margin-top: 5px; text-transform: uppercase;
+  }
+
+  #labels {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none; z-index: 5;
+  }
+
+  .hem-label {
+    position: absolute;
+    font-size: 9px; letter-spacing: 3px;
+    color: rgba(210,225,255,0.22);
     text-transform: uppercase;
+    transform: translateX(-50%);
   }
 
   #tooltip {
     position: fixed;
-    background: rgba(0,0,0,0.88);
-    border: 1px solid rgba(180,210,255,0.12);
-    border-radius: 6px;
-    padding: 13px 16px;
-    max-width: 260px;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 0.25s;
-    z-index: 20;
-    backdrop-filter: blur(12px);
+    background: rgba(0,0,0,0.90);
+    border: 1px solid rgba(200,220,255,0.10);
+    border-radius: 6px; padding: 13px 16px;
+    max-width: 255px; pointer-events: none;
+    opacity: 0; transition: opacity 0.2s;
+    z-index: 20; backdrop-filter: blur(14px);
   }
   #tooltip h3 {
-    font-size: 10px;
-    color: rgba(200,220,255,0.75);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-bottom: 5px;
+    font-size: 10px; color: rgba(210,225,255,0.72);
+    letter-spacing: 2px; text-transform: uppercase; margin-bottom: 5px;
   }
-  #tooltip .region-tag {
-    font-size: 9px;
-    color: rgba(200,220,255,0.3);
-    letter-spacing: 1px;
-    margin-bottom: 8px;
-    font-style: italic;
+  #tooltip .sub {
+    font-size: 9px; color: rgba(210,225,255,0.28);
+    letter-spacing: 1px; margin-bottom: 8px; font-style: italic;
   }
-  #tooltip p {
-    font-size: 10px;
-    color: rgba(200,220,255,0.5);
-    line-height: 1.65;
-  }
-  #tooltip .meta {
-    margin-top: 8px;
-    font-size: 9px;
-    color: rgba(200,220,255,0.25);
-    letter-spacing: 1px;
-  }
+  #tooltip p { font-size: 10px; color: rgba(210,225,255,0.48); line-height: 1.65; }
+  #tooltip .meta { margin-top: 8px; font-size: 9px; color: rgba(210,225,255,0.22); letter-spacing: 1px; }
 
   #stats {
-    position: fixed;
-    bottom: 22px;
-    left: 50%;
+    position: fixed; bottom: 20px; left: 50%;
     transform: translateX(-50%);
-    display: flex;
-    gap: 36px;
-    pointer-events: none;
-    z-index: 10;
+    display: flex; gap: 36px;
+    pointer-events: none; z-index: 10;
   }
   .stat { text-align: center; }
-  .stat-value {
-    font-size: 18px;
-    color: rgba(200,220,255,0.55);
-    font-weight: bold;
-  }
-  .stat-label {
-    font-size: 8px;
-    color: rgba(200,220,255,0.2);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-top: 3px;
-  }
+  .stat-v { font-size: 17px; color: rgba(210,225,255,0.45); font-weight: bold; }
+  .stat-l { font-size: 8px; color: rgba(210,225,255,0.18); letter-spacing: 2px; text-transform: uppercase; margin-top: 3px; }
 
   #live {
-    position: fixed;
-    bottom: 22px; right: 22px;
+    position: fixed; bottom: 20px; right: 20px;
     display: flex; align-items: center; gap: 7px;
     pointer-events: none; z-index: 10;
   }
-  #live-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: rgba(200,220,255,0.4);
-    animation: blink 2s ease-in-out infinite;
-  }
-  #live span {
-    font-size: 8px;
-    letter-spacing: 2px;
-    color: rgba(200,220,255,0.2);
-    text-transform: uppercase;
-  }
-  @keyframes blink {
-    0%,100% { opacity: 1; }
-    50% { opacity: 0.2; }
-  }
+  #dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(210,225,255,0.35); animation: blink 2.2s ease-in-out infinite; }
+  #live span { font-size: 8px; letter-spacing: 2px; color: rgba(210,225,255,0.18); text-transform: uppercase; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.15} }
 </style>
 </head>
 <body>
@@ -133,168 +91,100 @@
 </div>
 
 <div id="tooltip">
-  <h3 id="tt-name"></h3>
-  <div class="region-tag" id="tt-region"></div>
-  <p id="tt-desc"></p>
-  <div class="meta" id="tt-meta"></div>
+  <h3 id="tt-n"></h3>
+  <div class="sub" id="tt-s"></div>
+  <p id="tt-d"></p>
+  <div class="meta" id="tt-m"></div>
 </div>
 
 <div id="stats">
-  <div class="stat"><div class="stat-value">28</div><div class="stat-label">Agentes</div></div>
-  <div class="stat"><div class="stat-value">10</div><div class="stat-label">Escritórios</div></div>
-  <div class="stat"><div class="stat-value">4</div><div class="stat-label">Providers</div></div>
-  <div class="stat"><div class="stat-value" id="fps-val">—</div><div class="stat-label">Sinapses/s</div></div>
+  <div class="stat"><div class="stat-v">28</div><div class="stat-l">Agentes</div></div>
+  <div class="stat"><div class="stat-v">10</div><div class="stat-l">Escritórios</div></div>
+  <div class="stat"><div class="stat-v">4</div><div class="stat-l">Providers</div></div>
+  <div class="stat"><div class="stat-v" id="sv">—</div><div class="stat-l">Sinapses/s</div></div>
 </div>
-
-<div id="live"><div id="live-dot"></div><span>Ativo</span></div>
+<div id="live"><div id="dot"></div><span>Ativo</span></div>
 
 <script>
 const canvas = document.getElementById('c');
 const ctx = canvas.getContext('2d');
-let W, H, cx, cy, SCALE;
+let W, H;
 
-function resize() {
-  W = canvas.width = window.innerWidth;
-  H = canvas.height = window.innerHeight;
-  cx = W / 2; cy = H / 2;
-  SCALE = Math.min(W, H) * 0.40;
-}
+function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
 resize();
 window.addEventListener('resize', () => { resize(); init(); });
 
-// ─── REGIÕES (paleta monocromática) ──────────────────────────────────────────
-const REGIONS = [
-  { id:'router',    name:'Router Inteligente',    brain:'Córtex Pré-frontal',
-    desc:'classifyMessageComplexity() — seleciona o modelo LLM ideal por prefixo explícito (@senior/@junior), padrões regex e comprimento do contexto.',
-    meta:'Modelos: Opus · Sonnet · GLM Air · Gemini Flash',
-    rx:0.00, ry:-0.40, r:0.14, nodes:9 },
-  { id:'memory',    name:'RAG & Memória',          brain:'Lobo Temporal + Hipocampo',
-    desc:'MEMORY.md + knowledge/ por agente. Base de conhecimento com embeddings. SOUL.md como identidade permanente. Contexto persistente entre sessões.',
-    meta:'28 bases de conhecimento individuais',
-    rx:-0.30, ry:-0.05, r:0.13, nodes:11 },
-  { id:'agents',    name:'Agentes & Escritórios',  brain:'Lobo Parietal',
-    desc:'28 agentes em 10 escritórios virtuais: Operações, Casa, Health, Porti, Eon Holding, Ethos, Marketing, Jurídico, Contabilidade, Software House.',
-    meta:'28 agentes · 10 escritórios virtuais',
-    rx:0.30, ry:-0.08, r:0.15, nodes:14 },
-  { id:'interface', name:'Interface Web',          brain:'Lobo Occipital',
-    desc:'openclaw-web-dev (porta 4001) e openclaw-web (4000). Painel de controle, chat com agentes, Kill Switch de gastos e monitoramento em tempo real.',
-    meta:'DEV :4001 · PROD :4000',
-    rx:-0.32, ry:-0.28, r:0.11, nodes:7 },
-  { id:'gateway',   name:'Gateway WebSocket',      brain:'Cerebelo',
-    desc:'openclaw-gateway (18789) e openclaw-gateway-dev (18790). Ponte bidirecional entre interface e providers LLM. Streaming SSE em tempo real.',
-    meta:'DEV :18790 · PROD :18789',
-    rx:0.08, ry:0.38, r:0.12, nodes:6 },
-  { id:'infra',     name:'Infraestrutura VM',      brain:'Tronco Encefálico',
-    desc:'DigitalOcean Droplet — Ubuntu 22.04 LTS, 4 vCPUs, 8GB RAM, 77GB SSD. systemd gerencia todos os serviços. PostgreSQL via Docker. Cloudflare ZTNA.',
-    meta:'IP: 164.90.130.119 · São Paulo/NYC',
-    rx:0.00, ry:0.52, r:0.10, nodes:5 },
-  { id:'watchdog',  name:'Argos Watchdog',         brain:'Amígdala',
-    desc:'clawdio-watchdog — Monitor de saúde do sistema. Kill Switch para corte total de gastos. Detecta falhas e reinicia serviços automaticamente.',
-    meta:'Kill Switch · Health Monitor · Alertas',
-    rx:0.26, ry:0.22, r:0.09, nodes:4 },
-  { id:'discord',   name:'Bots Discord',           brain:'Córtex Motor',
-    desc:'clawdio-sala-geral + bot_prod.js. Chamadas diretas à API Anthropic sem passar pelo gateway. Camila Daily Briefing às 10h via Google Calendar.',
-    meta:'sala-geral · bot_prod · briefing diário',
-    rx:-0.14, ry:0.40, r:0.09, nodes:5 },
-  { id:'billing',   name:'Billing & Governança',   brain:'Ínsula',
-    desc:'billing.jsonl — log de tokens por agente e modelo. Heartbeats a cada 30min (20 agentes). Custo estimado ~$169/mês sem Kill Switch ativo.',
-    meta:'billing.jsonl · ~$169/mês heartbeats',
-    rx:-0.04, ry:0.18, r:0.08, nodes:4 },
-  { id:'llm',       name:'Multi-LLM Providers',    brain:'Corpo Caloso',
-    desc:'Anthropic (Opus/Sonnet/Haiku), Google Gemini (2.5 Pro/Flash), OpenAI (GPT-4o), Zhipu GLM (4.5 Air/Flash — gratuito). Fallback automático.',
-    meta:'25+ modelos · 4 providers · fallback auto',
-    rx:0.05, ry:-0.15, r:0.12, nodes:9 },
-];
-
-// Conexões inter-regionais
-const INTER = [
-  ['router','llm'],['router','agents'],['router','memory'],
-  ['agents','memory'],['agents','gateway'],['gateway','llm'],
-  ['gateway','interface'],['interface','router'],['watchdog','gateway'],
-  ['watchdog','infra'],['billing','router'],['billing','watchdog'],
-  ['discord','llm'],['discord','agents'],['infra','gateway'],['memory','llm'],
-];
-
-// ─── ESTADO ───────────────────────────────────────────────────────────────────
-let nodes = [], connections = [], sparks = [];
-let hoveredRegion = null;
-let synapseCount = 0, synapsePerSec = 0, lastSec = Date.now();
-
-// ─── FORMA ANATÔMICA DO CÉREBRO ───────────────────────────────────────────────
-// Pontos de controle para desenhar um cérebro humano visto de cima
-// Hemisfério esquerdo e direito com sulco central (fissura longitudinal)
-function drawBrainSilhouette() {
-  const s = SCALE;
-
+// ─── FORMA DO CÉREBRO EM PERFIL LATERAL ──────────────────────────────────────
+// Desenha um cérebro humano visto de lado (perfil direito)
+// Baseado na anatomia real: lobo frontal, parietal, occipital, temporal, cerebelo, tronco
+function brainPath(ctx, ox, oy, sc, flip) {
+  const f = flip ? -1 : 1;
   ctx.save();
-  ctx.translate(cx, cy);
+  ctx.translate(ox, oy);
+  ctx.scale(f, 1);
 
-  // Sombra/glow externo suave
-  const grd = ctx.createRadialGradient(0, 0, s * 0.1, 0, 0, s * 1.05);
-  grd.addColorStop(0, 'rgba(180,210,255,0.025)');
-  grd.addColorStop(0.6, 'rgba(180,210,255,0.012)');
-  grd.addColorStop(1, 'transparent');
-
-  // Hemisfério esquerdo
+  // Córtex principal (hemisfério)
   ctx.beginPath();
-  ctx.moveTo(0, -s * 0.72);
-  ctx.bezierCurveTo(-s*0.05, -s*0.82, -s*0.32, -s*0.88, -s*0.52, -s*0.72);
-  ctx.bezierCurveTo(-s*0.72, -s*0.56, -s*0.82, -s*0.30, -s*0.80, -s*0.05);
-  ctx.bezierCurveTo(-s*0.78, s*0.18, -s*0.68, s*0.42, -s*0.50, s*0.58);
-  ctx.bezierCurveTo(-s*0.32, s*0.72, -s*0.12, s*0.76, 0, s*0.72);
-  ctx.bezierCurveTo(-s*0.04, s*0.40, -s*0.04, -s*0.40, 0, -s*0.72);
+  // Topo frontal
+  ctx.moveTo(sc*0.05, -sc*0.72);
+  // Lobo frontal (frente)
+  ctx.bezierCurveTo(sc*0.28, -sc*0.88, sc*0.55, -sc*0.90, sc*0.62, -sc*0.78);
+  // Topo parietal
+  ctx.bezierCurveTo(sc*0.72, -sc*0.65, sc*0.78, -sc*0.50, sc*0.80, -sc*0.30);
+  // Lobo occipital (traseiro topo)
+  ctx.bezierCurveTo(sc*0.82, -sc*0.10, sc*0.80, sc*0.08, sc*0.72, sc*0.22);
+  // Occipital (traseiro)
+  ctx.bezierCurveTo(sc*0.62, sc*0.38, sc*0.48, sc*0.48, sc*0.32, sc*0.50);
+  // Cerebelo (parte traseira inferior)
+  ctx.bezierCurveTo(sc*0.18, sc*0.52, sc*0.05, sc*0.58, -sc*0.05, sc*0.62);
+  ctx.bezierCurveTo(-sc*0.15, sc*0.66, -sc*0.22, sc*0.62, -sc*0.22, sc*0.52);
+  ctx.bezierCurveTo(-sc*0.22, sc*0.42, -sc*0.15, sc*0.35, -sc*0.08, sc*0.28);
+  // Tronco encefálico
+  ctx.bezierCurveTo(sc*0.02, sc*0.20, sc*0.08, sc*0.12, sc*0.05, sc*0.02);
+  // Lobo temporal (parte inferior frontal)
+  ctx.bezierCurveTo(sc*0.02, -sc*0.12, -sc*0.05, -sc*0.28, -sc*0.08, -sc*0.42);
+  ctx.bezierCurveTo(-sc*0.10, -sc*0.55, -sc*0.05, -sc*0.65, sc*0.05, -sc*0.72);
   ctx.closePath();
-  ctx.fillStyle = grd;
-  ctx.fill();
-  ctx.strokeStyle = 'rgba(180,210,255,0.10)';
-  ctx.lineWidth = 1.2;
-  ctx.stroke();
 
-  // Hemisfério direito
-  ctx.beginPath();
-  ctx.moveTo(0, -s * 0.72);
-  ctx.bezierCurveTo(s*0.05, -s*0.82, s*0.32, -s*0.88, s*0.52, -s*0.72);
-  ctx.bezierCurveTo(s*0.72, -s*0.56, s*0.82, -s*0.30, s*0.80, -s*0.05);
-  ctx.bezierCurveTo(s*0.78, s*0.18, s*0.68, s*0.42, s*0.50, s*0.58);
-  ctx.bezierCurveTo(s*0.32, s*0.72, s*0.12, s*0.76, 0, s*0.72);
-  ctx.bezierCurveTo(s*0.04, s*0.40, s*0.04, -s*0.40, 0, -s*0.72);
-  ctx.closePath();
-  ctx.fillStyle = grd;
-  ctx.fill();
-  ctx.strokeStyle = 'rgba(180,210,255,0.10)';
-  ctx.lineWidth = 1.2;
-  ctx.stroke();
+  ctx.restore();
+}
 
-  // Sulco central (fissura longitudinal)
-  ctx.beginPath();
-  ctx.moveTo(0, -s * 0.72);
-  ctx.bezierCurveTo(s*0.03, -s*0.30, -s*0.03, s*0.30, 0, s*0.72);
-  ctx.strokeStyle = 'rgba(180,210,255,0.07)';
-  ctx.lineWidth = 1;
-  ctx.stroke();
+function brainGiros(ctx, ox, oy, sc, flip) {
+  const f = flip ? -1 : 1;
+  ctx.save();
+  ctx.translate(ox, oy);
+  ctx.scale(f, 1);
 
-  // Sulcos secundários (giros) — hemisfério esquerdo
-  const sulcosL = [
-    { pts: [[-0.52,-0.50],[-0.38,-0.62],[-0.20,-0.68]] },
-    { pts: [[-0.65,-0.20],[-0.55,-0.08],[-0.48, 0.10]] },
-    { pts: [[-0.72, 0.10],[-0.60, 0.28],[-0.44, 0.42]] },
-    { pts: [[-0.28,-0.55],[-0.18,-0.45],[-0.08,-0.35]] },
-    { pts: [[-0.40, 0.30],[-0.28, 0.18],[-0.14, 0.10]] },
-    { pts: [[-0.55, 0.50],[-0.38, 0.58],[-0.20, 0.62]] },
-    { pts: [[-0.20,-0.20],[-0.10,-0.10],[-0.04, 0.05]] },
+  // Sulcos e giros do cérebro em perfil
+  const sulcos = [
+    // Sulco central (Rolando)
+    [[sc*0.35,-sc*0.82],[sc*0.28,-sc*0.55],[sc*0.22,-sc*0.20]],
+    // Sulco lateral (Sylvius)
+    [[sc*0.05,-sc*0.42],[sc*0.25,-sc*0.38],[sc*0.52,-sc*0.30]],
+    // Sulco parieto-occipital
+    [[sc*0.62,-sc*0.50],[sc*0.68,-sc*0.28],[sc*0.70,-sc*0.05]],
+    // Giro frontal superior
+    [[sc*0.12,-sc*0.78],[sc*0.22,-sc*0.72],[sc*0.30,-sc*0.62]],
+    // Giro frontal médio
+    [[sc*0.08,-sc*0.60],[sc*0.18,-sc*0.55],[sc*0.28,-sc*0.48]],
+    // Giro parietal
+    [[sc*0.40,-sc*0.65],[sc*0.50,-sc*0.55],[sc*0.58,-sc*0.40]],
+    // Giro temporal superior
+    [[sc*0.10,-sc*0.25],[sc*0.28,-sc*0.22],[sc*0.45,-sc*0.18]],
+    // Giro temporal médio
+    [[sc*0.08,-sc*0.08],[sc*0.25,-sc*0.05],[sc*0.42, sc*0.02]],
+    // Occipital
+    [[sc*0.60, sc*0.05],[sc*0.65, sc*0.18],[sc*0.62, sc*0.32]],
+    // Cerebelo sulcos
+    [[-sc*0.02, sc*0.42],[sc*0.08, sc*0.50],[sc*0.20, sc*0.52]],
+    [[sc*0.00, sc*0.55],[sc*0.12, sc*0.58],[sc*0.22, sc*0.55]],
   ];
-  const sulcosR = sulcosL.map(s => ({ pts: s.pts.map(([x,y]) => [-x, y]) }));
 
-  [...sulcosL, ...sulcosR].forEach(sulco => {
-    const pts = sulco.pts;
+  sulcos.forEach(pts => {
     ctx.beginPath();
-    ctx.moveTo(pts[0][0]*s, pts[0][1]*s);
-    if (pts.length === 3) {
-      ctx.quadraticCurveTo(pts[1][0]*s, pts[1][1]*s, pts[2][0]*s, pts[2][1]*s);
-    } else {
-      ctx.lineTo(pts[1][0]*s, pts[1][1]*s);
-    }
-    ctx.strokeStyle = 'rgba(180,210,255,0.055)';
+    ctx.moveTo(pts[0][0], pts[0][1]);
+    ctx.quadraticCurveTo(pts[1][0], pts[1][1], pts[2][0], pts[2][1]);
+    ctx.strokeStyle = 'rgba(200,220,255,0.06)';
     ctx.lineWidth = 0.8;
     ctx.stroke();
   });
@@ -302,85 +192,141 @@ function drawBrainSilhouette() {
   ctx.restore();
 }
 
+// ─── REGIÕES POR HEMISFÉRIO ───────────────────────────────────────────────────
+// Hemisfério ESQUERDO = Sistema de Controle / Lógica / Infraestrutura
+// Hemisfério DIREITO  = Criatividade / Agentes / Interação
+
+const REGIONS_LEFT = [
+  { id:'router',    name:'Router Inteligente',   brain:'Córtex Pré-frontal',
+    desc:'classifyMessageComplexity() — seleciona o modelo LLM por prefixo (@senior/@junior), padrões regex e comprimento do contexto.',
+    meta:'Opus · Sonnet · GLM Air · Gemini Flash',
+    rx:0.25, ry:-0.60, r:0.12, nodes:8 },
+  { id:'gateway',   name:'Gateway WebSocket',    brain:'Córtex Motor',
+    desc:'openclaw-gateway (18789) e openclaw-gateway-dev (18790). Ponte bidirecional entre interface e providers LLM. Streaming SSE em tempo real.',
+    meta:'DEV :18790 · PROD :18789',
+    rx:0.48, ry:-0.32, r:0.10, nodes:6 },
+  { id:'infra',     name:'Infraestrutura VM',    brain:'Tronco Encefálico',
+    desc:'DigitalOcean — Ubuntu 22.04, 4 vCPUs, 8GB RAM, 77GB SSD. systemd gerencia todos os serviços. PostgreSQL via Docker. Cloudflare ZTNA.',
+    meta:'IP: 164.90.130.119 · São Paulo/NYC',
+    rx:0.02, ry: 0.18, r:0.09, nodes:5 },
+  { id:'watchdog',  name:'Argos Watchdog',       brain:'Amígdala',
+    desc:'clawdio-watchdog — Monitor de saúde. Kill Switch para corte total de gastos. Detecta falhas e reinicia serviços automaticamente.',
+    meta:'Kill Switch · Health Monitor · Alertas',
+    rx:0.38, ry: 0.05, r:0.09, nodes:4 },
+  { id:'billing',   name:'Billing & Governança', brain:'Ínsula',
+    desc:'billing.jsonl — log de tokens por agente e modelo. Heartbeats a cada 30min (20 agentes). Custo estimado ~$169/mês sem Kill Switch.',
+    meta:'billing.jsonl · ~$169/mês heartbeats',
+    rx:0.18, ry:-0.18, r:0.08, nodes:4 },
+];
+
+const REGIONS_RIGHT = [
+  { id:'agents',    name:'Agentes & Escritórios', brain:'Lobo Parietal',
+    desc:'28 agentes em 10 escritórios virtuais: Operações, Casa, Health, Porti, Eon Holding, Ethos, Marketing, Jurídico, Contabilidade, Software House.',
+    meta:'28 agentes · 10 escritórios virtuais',
+    rx:0.30, ry:-0.55, r:0.14, nodes:13 },
+  { id:'memory',    name:'RAG & Memória',          brain:'Lobo Temporal + Hipocampo',
+    desc:'MEMORY.md + knowledge/ por agente. Embeddings para busca semântica. SOUL.md como identidade permanente. Contexto persistente entre sessões.',
+    meta:'28 bases de conhecimento individuais',
+    rx:0.08, ry:-0.22, r:0.12, nodes:10 },
+  { id:'llm',       name:'Multi-LLM Providers',   brain:'Corpo Caloso',
+    desc:'Anthropic (Opus/Sonnet/Haiku), Google Gemini (2.5 Pro/Flash), OpenAI (GPT-4o), Zhipu GLM (4.5 Air/Flash — gratuito). Fallback automático.',
+    meta:'25+ modelos · 4 providers · fallback auto',
+    rx:0.50, ry:-0.28, r:0.11, nodes:9 },
+  { id:'interface', name:'Interface Web',          brain:'Lobo Occipital',
+    desc:'openclaw-web-dev (porta 4001) e openclaw-web (4000). Painel de controle, chat com agentes, Kill Switch de gastos e monitoramento em tempo real.',
+    meta:'DEV :4001 · PROD :4000',
+    rx:0.62, ry: 0.05, r:0.10, nodes:7 },
+  { id:'discord',   name:'Bots Discord',           brain:'Córtex Motor',
+    desc:'clawdio-sala-geral + bot_prod.js. Chamadas diretas à API Anthropic. Camila Daily Briefing às 10h via Google Calendar.',
+    meta:'sala-geral · bot_prod · briefing diário',
+    rx:0.20, ry: 0.15, r:0.09, nodes:5 },
+];
+
+// Conexões entre hemisférios (cruzadas)
+const CROSS_CONNECTIONS = [
+  ['router','agents'],['router','llm'],['gateway','llm'],
+  ['gateway','agents'],['watchdog','discord'],['billing','agents'],
+  ['infra','gateway'],['memory','router'],['interface','router'],
+];
+
+// ─── ESTADO ───────────────────────────────────────────────────────────────────
+let nodes = [], connections = [], sparks = [];
+let hoveredRegion = null;
+let sCnt = 0, sPerSec = 0, lastSec = Date.now();
+
+// Posições dos dois hemisférios
+function hemPositions() {
+  const gap = W * 0.04; // espaço entre os dois
+  const sc = Math.min(W * 0.38, H * 0.44);
+  const lx = W * 0.5 - sc * 0.55 - gap;
+  const rx = W * 0.5 + sc * 0.55 + gap;
+  const cy = H * 0.5 + sc * 0.05;
+  return { lx, rx, cy, sc };
+}
+
 // ─── NÓS ─────────────────────────────────────────────────────────────────────
 class Node {
-  constructor(x, y, region) {
-    this.ox = x; this.oy = y;
-    this.x = x; this.y = y;
+  constructor(x, y, region, isCenter) {
+    this.ox = x; this.oy = y; this.x = x; this.y = y;
     this.region = region;
-    this.r = 1.2 + Math.random() * 1.8;
+    this.r = isCenter ? 3.2 : 1.2 + Math.random() * 1.6;
     this.phase = Math.random() * Math.PI * 2;
-    this.speed = 0.008 + Math.random() * 0.012;
-    this.drift = 6 + Math.random() * 10;
-    this.driftAngle = Math.random() * Math.PI * 2;
-    this.driftSpeed = 0.002 + Math.random() * 0.004;
-    this.alpha = 0.3 + Math.random() * 0.4;
+    this.spd = 0.007 + Math.random() * 0.012;
+    this.drift = 5 + Math.random() * 9;
+    this.da = Math.random() * Math.PI * 2;
+    this.ds = 0.002 + Math.random() * 0.004;
+    this.alpha = 0.28 + Math.random() * 0.38;
   }
   update() {
-    this.phase += this.speed;
-    this.driftAngle += this.driftSpeed;
-    this.x = this.ox + Math.cos(this.driftAngle) * this.drift;
-    this.y = this.oy + Math.sin(this.driftAngle * 0.8) * this.drift * 0.7;
+    this.phase += this.spd;
+    this.da += this.ds;
+    this.x = this.ox + Math.cos(this.da) * this.drift;
+    this.y = this.oy + Math.sin(this.da * 0.75) * this.drift * 0.7;
   }
-  draw(highlight) {
+  draw(hi) {
     const pulse = 0.7 + Math.sin(this.phase) * 0.3;
-    const a = this.alpha * pulse * (highlight ? 1.8 : 1);
-    const r = this.r * (highlight ? 1.6 : 1);
+    const a = this.alpha * pulse * (hi ? 2.0 : 1);
+    const r = this.r * (hi ? 1.7 : 1);
 
-    // Glow
-    const grd = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, r * 5);
-    grd.addColorStop(0, `rgba(200,220,255,${a * 0.3})`);
+    const grd = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, r * 5.5);
+    grd.addColorStop(0, `rgba(210,230,255,${a * 0.28})`);
     grd.addColorStop(1, 'transparent');
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, r * 5, 0, Math.PI * 2);
-    ctx.fillStyle = grd;
-    ctx.fill();
+    ctx.beginPath(); ctx.arc(this.x, this.y, r * 5.5, 0, Math.PI * 2);
+    ctx.fillStyle = grd; ctx.fill();
 
-    // Núcleo
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, r, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(220,235,255,${Math.min(a * 1.2, 0.9)})`;
-    ctx.fill();
+    ctx.beginPath(); ctx.arc(this.x, this.y, r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(225,238,255,${Math.min(a * 1.3, 0.92)})`; ctx.fill();
   }
 }
 
 // ─── SINAPSES ─────────────────────────────────────────────────────────────────
 class Spark {
-  constructor(a, b) {
-    this.a = a; this.b = b;
-    this.t = 0;
-    this.speed = 0.008 + Math.random() * 0.014;
-    this.alive = true;
-    synapseCount++;
+  constructor(a, b, cross) {
+    this.a = a; this.b = b; this.t = 0;
+    this.spd = 0.007 + Math.random() * 0.013;
+    this.alive = true; this.cross = cross;
+    sCnt++;
   }
-  update() {
-    this.t += this.speed;
-    if (this.t >= 1) this.alive = false;
-  }
+  update() { this.t += this.spd; if (this.t >= 1) this.alive = false; }
   draw() {
     const px = this.a.x + (this.b.x - this.a.x) * this.t;
     const py = this.a.y + (this.b.y - this.a.y) * this.t;
     const alpha = Math.sin(this.t * Math.PI);
-
-    // Trail
     const trail = 0.10;
     const tx = this.a.x + (this.b.x - this.a.x) * Math.max(0, this.t - trail);
     const ty = this.a.y + (this.b.y - this.a.y) * Math.max(0, this.t - trail);
 
     const g = ctx.createLinearGradient(tx, ty, px, py);
+    const intensity = this.cross ? 0.75 : 0.55;
     g.addColorStop(0, 'transparent');
-    g.addColorStop(1, `rgba(210,230,255,${alpha * 0.6})`);
-    ctx.beginPath();
-    ctx.moveTo(tx, ty);
-    ctx.lineTo(px, py);
+    g.addColorStop(1, `rgba(215,232,255,${alpha * intensity})`);
+    ctx.beginPath(); ctx.moveTo(tx, ty); ctx.lineTo(px, py);
     ctx.strokeStyle = g;
-    ctx.lineWidth = 1.2 * alpha;
+    ctx.lineWidth = (this.cross ? 1.4 : 1.0) * alpha;
     ctx.stroke();
 
-    // Ponta
-    ctx.beginPath();
-    ctx.arc(px, py, 2 * alpha, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(230,240,255,${alpha * 0.85})`;
+    ctx.beginPath(); ctx.arc(px, py, (this.cross ? 2.2 : 1.6) * alpha, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(230,242,255,${alpha * (this.cross ? 0.90 : 0.75)})`;
     ctx.fill();
   }
 }
@@ -388,93 +334,163 @@ class Spark {
 // ─── INICIALIZAÇÃO ────────────────────────────────────────────────────────────
 function init() {
   nodes = []; connections = []; sparks = [];
+  const { lx, rx, cy, sc } = hemPositions();
+  const nodeMap = {};
 
-  const regionNodeMap = {};
+  function buildHem(regions, hemX, flip) {
+    regions.forEach(reg => {
+      const rcx = hemX + (flip ? -1 : 1) * reg.rx * sc;
+      const rcy = cy + reg.ry * sc;
+      const spread = sc * reg.r;
+      const arr = [];
 
-  REGIONS.forEach(reg => {
-    const rcx = cx + reg.rx * SCALE;
-    const rcy = cy + reg.ry * SCALE;
-    const spread = SCALE * reg.r;
-    const arr = [];
+      for (let i = 0; i < reg.nodes; i++) {
+        let nx, ny, tries = 0;
+        do {
+          const a = Math.random() * Math.PI * 2;
+          const d = Math.pow(Math.random(), 0.5) * spread;
+          nx = rcx + Math.cos(a) * d;
+          ny = rcy + Math.sin(a) * d;
+          tries++;
+        } while (!insideHem(nx, ny, hemX, cy, sc, flip) && tries < 40);
 
-    for (let i = 0; i < reg.nodes; i++) {
-      let nx, ny, tries = 0;
-      do {
-        const a = Math.random() * Math.PI * 2;
-        const d = Math.pow(Math.random(), 0.5) * spread;
-        nx = rcx + Math.cos(a) * d;
-        ny = rcy + Math.sin(a) * d;
-        tries++;
-      } while (!insideBrain(nx, ny) && tries < 40);
-
-      const n = new Node(nx, ny, reg);
-      if (i === 0) n.r = 3.5; // nó central maior
-      arr.push(n);
-      nodes.push(n);
-    }
-    regionNodeMap[reg.id] = arr;
-
-    // Conexões intra-região
-    for (let i = 0; i < arr.length; i++) {
-      for (let j = i + 1; j < arr.length; j++) {
-        if (Math.random() < 0.5) connections.push([arr[i], arr[j]]);
+        const n = new Node(nx, ny, reg, i === 0);
+        arr.push(n); nodes.push(n);
       }
-    }
-  });
+      nodeMap[reg.id] = arr;
 
-  // Conexões inter-região
-  INTER.forEach(([aId, bId]) => {
-    const an = regionNodeMap[aId], bn = regionNodeMap[bId];
+      // Intra-região
+      for (let i = 0; i < arr.length; i++)
+        for (let j = i + 1; j < arr.length; j++)
+          if (Math.random() < 0.48) connections.push([arr[i], arr[j], false]);
+    });
+  }
+
+  buildHem(REGIONS_LEFT, lx, false);
+  buildHem(REGIONS_RIGHT, rx, true);
+
+  // Conexões cruzadas
+  CROSS_CONNECTIONS.forEach(([aId, bId]) => {
+    const an = nodeMap[aId], bn = nodeMap[bId];
     if (an && bn) {
       const a = an[Math.floor(Math.random() * an.length)];
       const b = bn[Math.floor(Math.random() * bn.length)];
-      connections.push([a, b]);
+      connections.push([a, b, true]);
     }
   });
 }
 
-function insideBrain(x, y) {
-  const dx = (x - cx) / SCALE;
-  const dy = (y - cy) / SCALE;
-  // Forma oval do cérebro com lóbulos
-  const r = Math.sqrt(dx*dx*1.4 + dy*dy);
+function insideHem(x, y, hx, hy, sc, flip) {
+  const f = flip ? -1 : 1;
+  const dx = (x - hx) * f / sc;
+  const dy = (y - hy) / sc;
+  // Forma aproximada do cérebro em perfil
+  // Oval principal com ajuste para forma de cérebro
+  const r = Math.sqrt(dx * dx * 1.8 + dy * dy);
   const angle = Math.atan2(dy, dx);
-  const boundary = 0.78 + 0.08 * Math.cos(2 * angle) + 0.04 * Math.cos(4 * angle);
-  return r < boundary;
+  const boundary = 0.68 + 0.10 * Math.cos(angle) + 0.05 * Math.cos(2 * angle);
+  return r < boundary && dx > -0.28;
+}
+
+// ─── DESENHO DO CONTORNO ──────────────────────────────────────────────────────
+function drawBrains() {
+  const { lx, rx, cy, sc } = hemPositions();
+
+  // Hemisfério esquerdo (virado para a direita — face voltada para o centro)
+  drawOneBrain(lx, cy, sc, false);
+  // Hemisfério direito (espelhado — face voltada para o centro)
+  drawOneBrain(rx, cy, sc, true);
+
+  // Linha de separação central sutil
+  ctx.beginPath();
+  ctx.moveTo(W * 0.5, cy - sc * 0.85);
+  ctx.lineTo(W * 0.5, cy + sc * 0.75);
+  ctx.strokeStyle = 'rgba(200,220,255,0.04)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 8]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Labels dos hemisférios
+  ctx.save();
+  ctx.font = '8px Courier New';
+  ctx.letterSpacing = '3px';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = 'rgba(200,220,255,0.18)';
+  ctx.fillText('HEMISFÉRIO ESQUERDO', lx, cy - sc * 0.88);
+  ctx.fillText('HEMISFÉRIO DIREITO', rx, cy - sc * 0.88);
+  ctx.fillStyle = 'rgba(200,220,255,0.10)';
+  ctx.font = '7px Courier New';
+  ctx.fillText('CONTROLE · LÓGICA · INFRAESTRUTURA', lx, cy - sc * 0.82);
+  ctx.fillText('AGENTES · MEMÓRIA · INTERAÇÃO', rx, cy - sc * 0.82);
+  ctx.restore();
+}
+
+function drawOneBrain(ox, oy, sc, flip) {
+  // Glow de fundo
+  const grd = ctx.createRadialGradient(ox, oy, sc * 0.1, ox, oy, sc * 0.95);
+  grd.addColorStop(0, 'rgba(180,210,255,0.022)');
+  grd.addColorStop(0.5, 'rgba(180,210,255,0.010)');
+  grd.addColorStop(1, 'transparent');
+
+  ctx.save();
+  brainPath(ctx, ox, oy, sc, flip);
+  ctx.fillStyle = grd;
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(200,220,255,0.12)';
+  ctx.lineWidth = 1.1;
+  ctx.stroke();
+  ctx.restore();
+
+  // Sulcos
+  ctx.save();
+  brainGiros(ctx, ox, oy, sc, flip);
+  ctx.restore();
 }
 
 // ─── CONEXÕES ESTÁTICAS ───────────────────────────────────────────────────────
 function drawConnections() {
-  connections.forEach(([a, b]) => {
+  connections.forEach(([a, b, cross]) => {
     const dist = Math.hypot(a.x - b.x, a.y - b.y);
-    if (dist > 200) return;
-    const alpha = (1 - dist / 200) * 0.10;
+    const maxD = cross ? 999 : 180;
+    if (dist > maxD) return;
+    const alpha = cross
+      ? 0.06
+      : (1 - dist / maxD) * 0.09;
     ctx.beginPath();
     ctx.moveTo(a.x, a.y);
-    ctx.lineTo(b.x, b.y);
+    if (cross) {
+      // Curva suave para conexões cruzadas
+      const mx = (a.x + b.x) / 2;
+      const my = (a.y + b.y) / 2 - 30;
+      ctx.quadraticCurveTo(mx, my, b.x, b.y);
+    } else {
+      ctx.lineTo(b.x, b.y);
+    }
     ctx.strokeStyle = `rgba(200,220,255,${alpha})`;
-    ctx.lineWidth = 0.5;
+    ctx.lineWidth = cross ? 0.6 : 0.4;
     ctx.stroke();
   });
 }
 
-// ─── LABELS ───────────────────────────────────────────────────────────────────
-function drawLabels() {
-  REGIONS.forEach(reg => {
-    const x = cx + reg.rx * SCALE;
-    const y = cy + reg.ry * SCALE;
-    const isHovered = hoveredRegion === reg;
-    const alpha = isHovered ? 0.65 : 0.22;
+// ─── LABELS DAS REGIÕES ───────────────────────────────────────────────────────
+function drawRegionLabels() {
+  const { lx, rx, cy, sc } = hemPositions();
+
+  [...REGIONS_LEFT, ...REGIONS_RIGHT].forEach(reg => {
+    const isLeft = REGIONS_LEFT.includes(reg);
+    const hemX = isLeft ? lx : rx;
+    const flip = !isLeft;
+    const x = hemX + (flip ? -1 : 1) * reg.rx * sc;
+    const y = cy + reg.ry * sc;
+    const hi = hoveredRegion === reg;
 
     ctx.save();
-    ctx.font = `${isHovered ? 'bold ' : ''}9px Courier New`;
+    ctx.font = hi ? 'bold 9px Courier New' : '8px Courier New';
     ctx.textAlign = 'center';
-    ctx.fillStyle = `rgba(200,220,255,${alpha})`;
-    if (isHovered) {
-      ctx.shadowColor = 'rgba(200,220,255,0.4)';
-      ctx.shadowBlur = 10;
-    }
-    ctx.fillText(reg.name.toUpperCase(), x, y - 20);
+    ctx.fillStyle = `rgba(210,228,255,${hi ? 0.65 : 0.20})`;
+    if (hi) { ctx.shadowColor = 'rgba(210,228,255,0.35)'; ctx.shadowBlur = 10; }
+    ctx.fillText(reg.name.toUpperCase(), x, y - 18);
     ctx.restore();
   });
 }
@@ -485,25 +501,28 @@ let lastSpark = 0;
 function loop(ts) {
   requestAnimationFrame(loop);
 
-  // Fade suave
-  ctx.fillStyle = 'rgba(0,0,0,0.18)';
+  ctx.fillStyle = 'rgba(0,0,0,0.16)';
   ctx.fillRect(0, 0, W, H);
 
-  drawBrainSilhouette();
+  drawBrains();
   drawConnections();
 
-  // Nós
   nodes.forEach(n => {
     n.update();
     n.draw(hoveredRegion && n.region === hoveredRegion);
   });
 
-  // Disparar sinapses
-  if (ts - lastSpark > 55 && sparks.length < 50 && Math.random() < 0.75) {
-    const conn = connections[Math.floor(Math.random() * connections.length)];
+  // Disparar sinapses — mistura intra e inter-hemisférica
+  if (ts - lastSpark > 50 && sparks.length < 55 && Math.random() < 0.78) {
+    // 30% chance de sinapse cruzada
+    const crossConns = connections.filter(c => c[2]);
+    const intraConns = connections.filter(c => !c[2]);
+    const useCross = Math.random() < 0.30 && crossConns.length > 0;
+    const pool = useCross ? crossConns : intraConns;
+    const conn = pool[Math.floor(Math.random() * pool.length)];
     if (conn) {
-      const [a, b] = Math.random() < 0.5 ? conn : [conn[1], conn[0]];
-      sparks.push(new Spark(a, b));
+      const [a, b, cross] = Math.random() < 0.5 ? conn : [conn[1], conn[0], conn[2]];
+      sparks.push(new Spark(a, b, cross));
       lastSpark = ts;
     }
   }
@@ -511,28 +530,29 @@ function loop(ts) {
   sparks = sparks.filter(s => s.alive);
   sparks.forEach(s => { s.update(); s.draw(); });
 
-  drawLabels();
+  drawRegionLabels();
 
-  // Contador
   const now = Date.now();
   if (now - lastSec >= 1000) {
-    synapsePerSec = synapseCount;
-    synapseCount = 0;
-    lastSec = now;
-    document.getElementById('fps-val').textContent = synapsePerSec;
+    sPerSec = sCnt; sCnt = 0; lastSec = now;
+    document.getElementById('sv').textContent = sPerSec;
   }
 }
 
 // ─── INTERATIVIDADE ───────────────────────────────────────────────────────────
 canvas.addEventListener('mousemove', e => {
   const mx = e.clientX, my = e.clientY;
+  const { lx, rx, cy, sc } = hemPositions();
   let best = null, bestD = Infinity;
 
-  REGIONS.forEach(reg => {
-    const rx = cx + reg.rx * SCALE;
-    const ry = cy + reg.ry * SCALE;
-    const d = Math.hypot(mx - rx, my - ry);
-    if (d < SCALE * 0.17 && d < bestD) { bestD = d; best = reg; }
+  [...REGIONS_LEFT, ...REGIONS_RIGHT].forEach(reg => {
+    const isLeft = REGIONS_LEFT.includes(reg);
+    const hemX = isLeft ? lx : rx;
+    const flip = !isLeft;
+    const x = hemX + (flip ? -1 : 1) * reg.rx * sc;
+    const y = cy + reg.ry * sc;
+    const d = Math.hypot(mx - x, my - y);
+    if (d < sc * 0.16 && d < bestD) { bestD = d; best = reg; }
   });
 
   hoveredRegion = best;
@@ -540,14 +560,12 @@ canvas.addEventListener('mousemove', e => {
 
   if (best) {
     tt.style.opacity = '1';
-    let lx = mx + 18, ly = my - 10;
-    document.getElementById('tt-name').textContent = best.name;
-    document.getElementById('tt-region').textContent = '↳ ' + best.brain;
-    document.getElementById('tt-desc').textContent = best.desc;
-    document.getElementById('tt-meta').textContent = best.meta;
-    tt.style.left = lx + 'px';
-    tt.style.top = ly + 'px';
-    // Ajuste de borda
+    document.getElementById('tt-n').textContent = best.name;
+    document.getElementById('tt-s').textContent = '↳ ' + best.brain;
+    document.getElementById('tt-d').textContent = best.desc;
+    document.getElementById('tt-m').textContent = best.meta;
+    tt.style.left = (mx + 18) + 'px';
+    tt.style.top = (my - 10) + 'px';
     requestAnimationFrame(() => {
       const r = tt.getBoundingClientRect();
       if (r.right > W - 10) tt.style.left = (mx - r.width - 18) + 'px';
@@ -561,10 +579,11 @@ canvas.addEventListener('mousemove', e => {
 canvas.addEventListener('click', e => {
   if (!hoveredRegion) return;
   const rn = nodes.filter(n => n.region === hoveredRegion);
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < 14; i++) {
     const a = rn[Math.floor(Math.random() * rn.length)];
     const b = nodes[Math.floor(Math.random() * nodes.length)];
-    if (a && b && a !== b) sparks.push(new Spark(a, b));
+    const cross = a && b && REGIONS_LEFT.includes(a.region) !== REGIONS_LEFT.includes(b.region);
+    if (a && b && a !== b) sparks.push(new Spark(a, b, cross));
   }
 });
 
