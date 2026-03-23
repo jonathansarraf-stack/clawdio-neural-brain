@@ -76,6 +76,80 @@ body{background:#000;overflow:hidden;font-family:'Courier New',monospace;width:1
 .lobe-zone{position:absolute;border-radius:50%;cursor:pointer;z-index:10;
   background:transparent;transition:background 0.2s}
 .lobe-zone:hover{background:rgba(200,220,255,0.04)}
+
+/* Legenda */
+#legend{
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(0,0,0,0.92);
+  border-top:1px solid rgba(200,218,255,0.06);
+  backdrop-filter:blur(16px);
+  z-index:25;
+  transform:translateY(100%);
+  transition:transform 0.4s cubic-bezier(0.22,1,0.36,1);
+  max-height:72vh;
+  overflow-y:auto;
+}
+#legend.open{transform:translateY(0)}
+#legend-toggle{
+  position:fixed;bottom:52px;left:50%;transform:translateX(-50%);
+  background:rgba(0,0,0,0.80);border:1px solid rgba(200,218,255,0.10);
+  color:rgba(200,218,255,0.35);font-family:'Courier New',monospace;
+  font-size:8px;letter-spacing:3px;text-transform:uppercase;
+  padding:5px 18px;border-radius:20px;cursor:pointer;
+  z-index:30;transition:all 0.2s;white-space:nowrap;
+}
+#legend-toggle:hover{color:rgba(200,218,255,0.70);border-color:rgba(200,218,255,0.25)}
+#legend-inner{
+  padding:28px 32px 24px;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:20px;
+}
+#legend-title{
+  font-size:9px;letter-spacing:4px;color:rgba(200,218,255,0.25);
+  text-transform:uppercase;text-align:center;
+  padding:16px 0 0;
+  border-bottom:1px solid rgba(200,218,255,0.04);
+  padding-bottom:16px;
+  margin:0 32px;
+}
+.leg-card{
+  border:1px solid rgba(200,218,255,0.06);
+  border-radius:6px;
+  padding:14px 16px;
+  background:rgba(200,218,255,0.02);
+  transition:background 0.2s;
+}
+.leg-card:hover{background:rgba(200,218,255,0.04)}
+.leg-card-header{
+  display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;
+}
+.leg-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:rgba(200,218,255,0.30);
+  flex-shrink:0;margin-top:3px;
+  box-shadow:0 0 6px rgba(200,218,255,0.15);
+}
+.leg-names{flex:1}
+.leg-anatomy{
+  font-size:9px;letter-spacing:2px;color:rgba(200,218,255,0.55);
+  text-transform:uppercase;font-weight:bold;
+}
+.leg-system{
+  font-size:9px;letter-spacing:1px;color:rgba(200,218,255,0.25);
+  margin-top:2px;text-transform:uppercase;
+}
+.leg-side{
+  font-size:7px;letter-spacing:1px;
+  color:rgba(200,218,255,0.15);text-transform:uppercase;
+  border:1px solid rgba(200,218,255,0.08);
+  padding:2px 6px;border-radius:3px;white-space:nowrap;
+}
+.leg-reason{
+  font-size:10px;color:rgba(200,218,255,0.38);
+  line-height:1.6;margin-top:4px;
+}
+.leg-reason strong{color:rgba(200,218,255,0.60);font-weight:normal}
 </style>
 </head>
 <body>
@@ -125,6 +199,161 @@ body{background:#000;overflow:hidden;font-family:'Courier New',monospace;width:1
   <div id="dot"></div>
   <div id="tel-dot" style="width:7px;height:7px;border-radius:50%;background:rgba(220,80,80,0.5);margin:0 5px;transition:all 0.3s"></div>
   <span id="tel-label">OFFLINE</span>
+</div>
+
+<!-- Botão toggle legenda -->
+<button id="legend-toggle" onclick="toggleLegend()">&#9660; Legenda das Regiões</button>
+
+<!-- Legenda deslizante -->
+<div id="legend">
+  <div id="legend-title">Mapeamento Anatômico — Regiões Cerebrais &times; Componentes do Sistema</div>
+  <div id="legend-inner">
+
+    <div class="leg-card">
+      <div class="leg-card-header">
+        <div class="leg-dot"></div>
+        <div class="leg-names">
+          <div class="leg-anatomy">Lobo Frontal</div>
+          <div class="leg-system">Router Inteligente</div>
+        </div>
+        <div class="leg-side">Hemisfério Esquerdo</div>
+      </div>
+      <div class="leg-reason">O lobo frontal humano é responsável pelo <strong>raciocínio, planejamento e tomada de decisão</strong>. No Clawdio, o Router é exatamente isso: analisa cada mensagem, avalia complexidade, contexto e prefixos (<code>@senior</code>, <code>@junior</code>) e decide qual modelo LLM deve processar a requisição. É o córtex pré-frontal do sistema.</div>
+    </div>
+
+    <div class="leg-card">
+      <div class="leg-card-header">
+        <div class="leg-dot"></div>
+        <div class="leg-names">
+          <div class="leg-anatomy">Lobo Frontal</div>
+          <div class="leg-system">Multi-LLM Providers</div>
+        </div>
+        <div class="leg-side">Hemisfério Direito</div>
+      </div>
+      <div class="leg-reason">O lobo frontal direito complementa o esquerdo com <strong>criatividade e processamento paralelo</strong>. Os providers (Anthropic, Google, OpenAI, Zhipu) são os diferentes “modos de pensar” do sistema — cada um com forças distintas, acionados conforme o tipo de tarefa exige.</div>
+    </div>
+
+    <div class="leg-card">
+      <div class="leg-card-header">
+        <div class="leg-dot"></div>
+        <div class="leg-names">
+          <div class="leg-anatomy">Lobo Parietal</div>
+          <div class="leg-system">Agentes &amp; Escritórios</div>
+        </div>
+        <div class="leg-side">Hemisfério Esquerdo</div>
+      </div>
+      <div class="leg-reason">O lobo parietal integra <strong>informações sensoriais e organiza o espaço</strong>. Os 28 agentes distribuídos em 10 escritórios virtuais funcionam da mesma forma: cada um ocupa seu “território” (filesystem isolado), integra dados do contexto e age dentro de seu domínio específico.</div>
+    </div>
+
+    <div class="leg-card">
+      <div class="leg-card-header">
+        <div class="leg-dot"></div>
+        <div class="leg-names">
+          <div class="leg-anatomy">Lobo Parietal</div>
+          <div class="leg-system">Hierarquia Sênior / Pleno / Jr</div>
+        </div>
+        <div class="leg-side">Hemisfério Direito</div>
+      </div>
+      <div class="leg-reason">O parietal direito processa <strong>hierarquia e relações espaciais</strong>. A hierarquia de agentes espelha isso: Estagiário (GLM Flash), Júnior (GLM Air), Pleno (Sonnet) e Sênior (Opus) formam uma cadeia de escalação onde cada nível tem maior capacidade e custo.</div>
+    </div>
+
+    <div class="leg-card">
+      <div class="leg-card-header">
+        <div class="leg-dot"></div>
+        <div class="leg-names">
+          <div class="leg-anatomy">Lobo Temporal</div>
+          <div class="leg-system">RAG &amp; Memória</div>
+        </div>
+        <div class="leg-side">Hemisfério Esquerdo</div>
+      </div>
+      <div class="leg-reason">O lobo temporal humano abriga o <strong>hipocampo, sede da memória e da linguagem</strong>. O sistema RAG do Clawdio replica isso: MEMORY.md para memória de curto prazo, <code>knowledge/</code> para longo prazo, e embeddings para busca semântica — exatamente como o cérebro consolida e recupera memórias.</div>
+    </div>
+
+    <div class="leg-card">
+      <div class="leg-card-header">
+        <div class="leg-dot"></div>
+        <div class="leg-names">
+          <div class="leg-anatomy">Lobo Temporal</div>
+          <div class="leg-system">Bots Discord &amp; Automações</div>
+        </div>
+        <div class="leg-side">Hemisfério Direito</div>
+      </div>
+      <div class="leg-reason">O temporal direito processa <strong>contexto social e comunicação</strong>. Os bots do Discord são a voz social do sistema — interagem com humanos em canais públicos, respondem em contexto de grupo e executam automações como o briefing diário da Camila.</div>
+    </div>
+
+    <div class="leg-card">
+      <div class="leg-card-header">
+        <div class="leg-dot"></div>
+        <div class="leg-names">
+          <div class="leg-anatomy">Lobo Occipital</div>
+          <div class="leg-system">Interface Web</div>
+        </div>
+        <div class="leg-side">Hemisfério Esquerdo</div>
+      </div>
+      <div class="leg-reason">O lobo occipital é o <strong>córtex visual — o que o cérebro projeta para o mundo</strong>. A interface web (Clawdio DEV :4001 e PROD :4000) é a camada de visualização do sistema: onde tudo se torna visível, controlável e interativo para o usuário.</div>
+    </div>
+
+    <div class="leg-card">
+      <div class="leg-card-header">
+        <div class="leg-dot"></div>
+        <div class="leg-names">
+          <div class="leg-anatomy">Lobo Occipital</div>
+          <div class="leg-system">Billing &amp; Governança</div>
+        </div>
+        <div class="leg-side">Hemisfério Direito</div>
+      </div>
+      <div class="leg-reason">O occipital direito integra <strong>percepção e controle motor visual</strong>. O módulo de billing monitora cada token consumido, calcula custos em tempo real e ativa o Kill Switch — é a consciência do sistema sobre seus próprios gastos e limites.</div>
+    </div>
+
+    <div class="leg-card">
+      <div class="leg-card-header">
+        <div class="leg-dot"></div>
+        <div class="leg-names">
+          <div class="leg-anatomy">Cerebelo</div>
+          <div class="leg-system">Gateway WebSocket</div>
+        </div>
+        <div class="leg-side">Hemisfério Esquerdo</div>
+      </div>
+      <div class="leg-reason">O cerebelo humano coordena <strong>movimentos precisos e automáticos</strong> sem intervenção consciente. O Gateway WebSocket faz exatamente isso: roteia mensagens bidirecionalmente entre interface e LLMs com precisão e baixa latência, de forma completamente transparente ao usuário.</div>
+    </div>
+
+    <div class="leg-card">
+      <div class="leg-card-header">
+        <div class="leg-dot"></div>
+        <div class="leg-names">
+          <div class="leg-anatomy">Cerebelo</div>
+          <div class="leg-system">Argos Watchdog</div>
+        </div>
+        <div class="leg-side">Hemisfério Direito</div>
+      </div>
+      <div class="leg-reason">O cerebelo direito regula <strong>equilíbrio e correcção de erros em tempo real</strong>. O Argos monitora todos os serviços continuamente e reinicia automaticamente qualquer processo que caia — é o sistema de equilíbrio homeostático do Clawdio.</div>
+    </div>
+
+    <div class="leg-card">
+      <div class="leg-card-header">
+        <div class="leg-dot"></div>
+        <div class="leg-names">
+          <div class="leg-anatomy">Tronco Encefálico</div>
+          <div class="leg-system">Infraestrutura VM</div>
+        </div>
+        <div class="leg-side">Hemisfério Esquerdo</div>
+      </div>
+      <div class="leg-reason">O tronco encefálico controla as <strong>funções vitais involuntárias</strong> — respiração, batimento cardíaco. A VM DigitalOcean (8GB RAM, 4 vCPU, Ubuntu 22.04) é exatamente isso: a base física que mantém tudo vivo, rodando 24/7 independentemente de qualquer outra camada.</div>
+    </div>
+
+    <div class="leg-card">
+      <div class="leg-card-header">
+        <div class="leg-dot"></div>
+        <div class="leg-names">
+          <div class="leg-anatomy">Tronco Encefálico</div>
+          <div class="leg-system">Cloudflare &amp; Rede</div>
+        </div>
+        <div class="leg-side">Hemisfério Direito</div>
+      </div>
+      <div class="leg-reason">O tronco encefálico também regula o <strong>sistema nervoso autônomo — a conexão com o mundo externo</strong>. Os tunnels Cloudflare (Zero Trust) são os nervos periféricos do sistema: conectam o servidor interno ao mundo externo de forma segura, sem expor portas diretamente à internet.</div>
+    </div>
+
+  </div>
 </div>
 
 <script>
@@ -767,6 +996,34 @@ setTimeout(() => {
 buildScene();
 initNodes();
 loop(0);
+
+// ═══════════════════════════════════════════════════════════════════════
+// LEGENDA TOGGLE
+// ═══════════════════════════════════════════════════════════════════════
+let legendOpen = false;
+function toggleLegend(){
+  legendOpen = !legendOpen;
+  const leg = document.getElementById('legend');
+  const btn = document.getElementById('legend-toggle');
+  if(legendOpen){
+    leg.classList.add('open');
+    btn.innerHTML = '&#9650; Fechar Legenda';
+    btn.style.bottom = (leg.offsetHeight + 8) + 'px';
+  } else {
+    leg.classList.remove('open');
+    btn.innerHTML = '&#9660; Legenda das Regiões';
+    btn.style.bottom = '52px';
+  }
+}
+
+// Ajusta posição do botão quando a legenda abre
+document.getElementById('legend').addEventListener('transitionend', () => {
+  const leg = document.getElementById('legend');
+  const btn = document.getElementById('legend-toggle');
+  if(legendOpen){
+    btn.style.bottom = (leg.offsetHeight + 8) + 'px';
+  }
+});
 </script>
 </body>
 </html>
