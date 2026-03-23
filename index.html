@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clawdio — Rede Neural</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #020408;
+    overflow: hidden;
+    font-family: 'Courier New', monospace;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  canvas {
+    display: block;
+    position: fixed;
+    top: 0; left: 0;
+  }
+
+  #ui-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  #header {
+    position: fixed;
+    top: 24px; left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    pointer-events: none;
+  }
+
+  #header h1 {
+    font-size: 13px;
+    letter-spacing: 6px;
+    color: #00ffc8;
+    text-transform: uppercase;
+    opacity: 0.9;
+    text-shadow: 0 0 20px #00ffc8aa;
+  }
+
+  #header p {
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: #ffffff44;
+    margin-top: 4px;
+    text-transform: uppercase;
+  }
+
+  #tooltip {
+    position: fixed;
+    background: rgba(0, 10, 20, 0.92);
+    border: 1px solid #00ffc855;
+    border-radius: 8px;
+    padding: 14px 18px;
+    max-width: 280px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 20;
+    backdrop-filter: blur(10px);
+  }
+
+  #tooltip h3 {
+    font-size: 12px;
+    color: #00ffc8;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  #tooltip .brain-region {
+    font-size: 10px;
+    color: #ffffff66;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    font-style: italic;
+  }
+
+  #tooltip p {
+    font-size: 11px;
+    color: #ffffffaa;
+    line-height: 1.6;
+  }
+
+  #tooltip .nodes-count {
+    margin-top: 8px;
+    font-size: 10px;
+    color: #00ffc877;
+    letter-spacing: 1px;
+  }
+
+  #stats {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 32px;
+    pointer-events: none;
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat-value {
+    font-size: 20px;
+    color: #00ffc8;
+    font-weight: bold;
+    text-shadow: 0 0 15px #00ffc8;
+  }
+
+  .stat-label {
+    font-size: 9px;
+    color: #ffffff44;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  #pulse-ring {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #00ffc8;
+    box-shadow: 0 0 10px #00ffc8;
+    animation: pulse-dot 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.6); }
+  }
+
+  #pulse-label {
+    position: fixed;
+    bottom: 20px;
+    right: 40px;
+    font-size: 9px;
+    color: #00ffc855;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="brain-canvas"></canvas>
+
+<div id="ui-overlay">
+  <div id="header">
+    <h1>Clawdio — Neural Architecture</h1>
+    <p>Sistema de Orquestração de Agentes Autônomos · v2.0</p>
+  </div>
+
+  <div id="tooltip">
+    <h3 id="tt-name"></h3>
+    <div class="brain-region" id="tt-region"></div>
+    <p id="tt-desc"></p>
+    <div class="nodes-count" id="tt-nodes"></div>
+  </div>
+
+  <div id="stats">
+    <div class="stat">
+      <div class="stat-value">28</div>
+      <div class="stat-label">Agentes</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">10</div>
+      <div class="stat-label">Escritórios</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value">4</div>
+      <div class="stat-label">Providers LLM</div>
+    </div>
+    <div class="stat">
+      <div class="stat-value" id="synapse-count">0</div>
+      <div class="stat-label">Sinapses/s</div>
+    </div>
+  </div>
+
+  <div id="pulse-label">ATIVO</div>
+  <div id="pulse-ring"></div>
+</div>
+
+<script>
+const canvas = document.getElementById('brain-canvas');
+const ctx = canvas.getContext('2d');
+const tooltip = document.getElementById('tooltip');
+
+let W, H, cx, cy;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+  cx = W / 2;
+  cy = H / 2;
+}
+resize();
+window.addEventListener('resize', () => { resize(); buildBrain(); });
+
+// ─── MAPEAMENTO CÉREBRO → SISTEMA ─────────────────────────────────────────────
+// Córtex Pré-frontal → Router / Inteligência de Decisão
+// Lobo Temporal → Memória / RAG / Knowledge Base
+// Lobo Parietal → Agentes de Operações / Infraestrutura
+// Lobo Occipital → Interface Web / Visualização
+// Cerebelo → Gateway WebSocket / Coordenação
+// Tronco Encefálico → Infraestrutura / VM / systemd
+// Hipocampo → Memória Persistente dos Agentes
+// Amígdala → Sistema de Alertas / Watchdog (Argos)
+// Córtex Motor → Bots Discord / Ações Externas
+// Insula → Custos / Billing / Governança
+
+const REGIONS = [
+  {
+    id: 'router',
+    name: 'Router Inteligente',
+    brainRegion: 'Córtex Pré-frontal',
+    desc: 'classifyMessageComplexity() — Analisa cada mensagem e seleciona o modelo LLM ideal. Lógica de prefixos (@senior, @junior), padrões regex e comprimento de contexto.',
+    nodes: 'Modelos: Opus, Sonnet, GLM Air, Gemini Flash',
+    color: '#00ffc8',
+    glow: '#00ffc8',
+    rx: 0,
+    ry: -0.38,
+    size: 1.4,
+    nodeCount: 8
+  },
+  {
+    id: 'memory',
+    name: 'RAG & Memória',
+    brainRegion: 'Lobo Temporal + Hipocampo',
+    desc: 'MEMORY.md + knowledge/ por agente. Base de conhecimento vetorial com embeddings. Contexto persistente entre sessões. SOUL.md como identidade permanente.',
+    nodes: '28 bases de conhecimento individuais',
+    color: '#7c3aed',
+    glow: '#a855f7',
+    rx: -0.28,
+    ry: 0.05,
+    size: 1.2,
+    nodeCount: 12
+  },
+  {
+    id: 'gateway',
+    name: 'Gateway WebSocket',
+    brainRegion: 'Cerebelo',
+    desc: 'openclaw-gateway (porta 18789) e openclaw-gateway-dev (18790). Ponte bidirecional entre a interface web e os providers LLM. Streaming SSE em tempo real.',
+    nodes: 'DEV :18790 · PROD :18789',
+    color: '#f59e0b',
+    glow: '#fbbf24',
+    rx: 0.1,
+    ry: 0.35,
+    size: 1.15,
+    nodeCount: 6
+  },
+  {
+    id: 'infra',
+    name: 'Infraestrutura VM',
+    brainRegion: 'Tronco Encefálico',
+    desc: 'DigitalOcean Droplet — Ubuntu 22.04 LTS, 4 vCPUs, 8GB RAM, 77GB SSD. systemd gerencia todos os serviços. PostgreSQL via Docker. Cloudflare ZTNA.',
+    nodes: 'IP: 164.90.130.119 · São Paulo/NYC',
+    color: '#6b7280',
+    glow: '#9ca3af',
+    rx: 0,
+    ry: 0.5,
+    size: 1.0,
+    nodeCount: 5
+  },
+  {
+    id: 'agents',
+    name: 'Agentes & Escritórios',
+    brainRegion: 'Lobo Parietal',
+    desc: '28 agentes distribuídos em 10 escritórios virtuais: Operações, Casa, Health, Porti, Eon Holding, Ethos, Marketing, Jurídico, Contabilidade, Software House.',
+    nodes: '28 agentes · 10 escritórios virtuais',
+    color: '#3b82f6',
+    glow: '#60a5fa',
+    rx: 0.3,
+    ry: -0.1,
+    size: 1.3,
+    nodeCount: 14
+  },
+  {
+    id: 'interface',
+    name: 'Interface Web',
+    brainRegion: 'Lobo Occipital',
+    desc: 'openclaw-web-dev (porta 4001) e openclaw-web (4000). Node.js + HTML/CSS/JS. Painel de controle, chat com agentes, Kill Switch de gastos e monitoramento.',
+    nodes: 'DEV :4001 · PROD :4000',
+    color: '#10b981',
+    glow: '#34d399',
+    rx: -0.35,
+    ry: -0.25,
+    size: 1.1,
+    nodeCount: 7
+  },
+  {
+    id: 'watchdog',
+    name: 'Argos Watchdog',
+    brainRegion: 'Amígdala',
+    desc: 'clawdio-watchdog — Monitor de saúde do sistema. Detecta falhas, reinicia serviços, envia alertas. Sistema de Kill Switch para corte total de gastos de API.',
+    nodes: 'Kill Switch · Health Monitor · Alertas',
+    color: '#ef4444',
+    glow: '#f87171',
+    rx: 0.25,
+    ry: 0.22,
+    size: 0.9,
+    nodeCount: 4
+  },
+  {
+    id: 'discord',
+    name: 'Bots Discord',
+    brainRegion: 'Córtex Motor',
+    desc: 'clawdio-sala-geral + bot_prod.js. Chamadas diretas à API Anthropic sem passar pelo gateway. Integração com canais Discord dos escritórios. Camila Daily Briefing.',
+    nodes: 'sala-geral · bot_prod · briefing diário',
+    color: '#8b5cf6',
+    glow: '#a78bfa',
+    rx: -0.15,
+    ry: 0.38,
+    size: 0.95,
+    nodeCount: 5
+  },
+  {
+    id: 'billing',
+    name: 'Billing & Governança',
+    brainRegion: 'Ínsula',
+    desc: 'billing.jsonl — Log de tokens por agente e modelo. Heartbeats (a cada 30min, 20 agentes). Custo estimado: ~$169/mês sem Kill Switch. Auditoria de consumo automático.',
+    nodes: 'billing.jsonl · ~$169/mês heartbeats',
+    color: '#f97316',
+    glow: '#fb923c',
+    rx: -0.05,
+    ry: 0.18,
+    size: 0.85,
+    nodeCount: 4
+  },
+  {
+    id: 'llm',
+    name: 'Multi-LLM Providers',
+    brainRegion: 'Corpo Caloso',
+    desc: 'Anthropic (Claude Opus/Sonnet/Haiku), Google Gemini (2.5 Pro/Flash), OpenAI (GPT-4o), Zhipu GLM (4.5 Air/Flash — gratuito). Fallback automático entre providers.',
+    nodes: '25+ modelos · 4 providers · fallback auto',
+    color: '#ec4899',
+    glow: '#f472b6',
+    rx: 0.05,
+    ry: -0.15,
+    size: 1.05,
+    nodeCount: 9
+  }
+];
+
+// ─── ESTRUTURA DE NÓS ─────────────────────────────────────────────────────────
+let nodes = [];
+let connections = [];
+let synapses = [];
+let synapseCountPerSec = 0;
+let synapseFireCount = 0;
+let lastSecond = Date.now();
+
+class Node {
+  constructor(x, y, region, size = 3) {
+    this.x = x;
+    this.y = y;
+    this.region = region;
+    this.baseSize = size;
+    this.size = size;
+    this.pulse = Math.random() * Math.PI * 2;
+    this.pulseSpeed = 0.02 + Math.random() * 0.03;
+    this.alpha = 0.5 + Math.random() * 0.5;
+    this.vx = (Math.random() - 0.5) * 0.15;
+    this.vy = (Math.random() - 0.5) * 0.15;
+    this.ox = x;
+    this.oy = y;
+    this.driftRange = 8 + Math.random() * 12;
+    this.driftAngle = Math.random() * Math.PI * 2;
+    this.driftSpeed = 0.003 + Math.random() * 0.005;
+  }
+
+  update() {
+    this.pulse += this.pulseSpeed;
+    this.driftAngle += this.driftSpeed;
+    this.x = this.ox + Math.cos(this.driftAngle) * this.driftRange;
+    this.y = this.oy + Math.sin(this.driftAngle * 0.7) * this.driftRange * 0.6;
+    this.size = this.baseSize + Math.sin(this.pulse) * 1.2;
+  }
+
+  draw() {
+    const r = this.region;
+    const alpha = this.alpha * (0.7 + Math.sin(this.pulse) * 0.3);
+
+    // Glow externo
+    const grd = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size * 4);
+    grd.addColorStop(0, r.glow + '55');
+    grd.addColorStop(1, 'transparent');
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size * 4, 0, Math.PI * 2);
+    ctx.fillStyle = grd;
+    ctx.fill();
+
+    // Núcleo
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fillStyle = r.color;
+    ctx.globalAlpha = alpha;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+}
+
+class Synapse {
+  constructor(fromNode, toNode) {
+    this.from = fromNode;
+    this.to = toNode;
+    this.progress = 0;
+    this.speed = 0.012 + Math.random() * 0.018;
+    this.size = 2.5 + Math.random() * 2;
+    this.color = fromNode.region.glow;
+    this.alive = true;
+    synapseFireCount++;
+  }
+
+  update() {
+    this.progress += this.speed;
+    if (this.progress >= 1) this.alive = false;
+  }
+
+  draw() {
+    const x = this.from.x + (this.to.x - this.from.x) * this.progress;
+    const y = this.from.y + (this.to.y - this.from.y) * this.progress;
+    const alpha = Math.sin(this.progress * Math.PI);
+
+    // Trail
+    const trailLen = 0.08;
+    const tx = this.from.x + (this.to.x - this.from.x) * Math.max(0, this.progress - trailLen);
+    const ty = this.from.y + (this.to.y - this.from.y) * Math.max(0, this.progress - trailLen);
+
+    const grad = ctx.createLinearGradient(tx, ty, x, y);
+    grad.addColorStop(0, 'transparent');
+    grad.addColorStop(1, this.color + Math.floor(alpha * 200).toString(16).padStart(2, '0'));
+
+    ctx.beginPath();
+    ctx.moveTo(tx, ty);
+    ctx.lineTo(x, y);
+    ctx.strokeStyle = grad;
+    ctx.lineWidth = this.size * alpha;
+    ctx.globalAlpha = alpha;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    // Ponta brilhante
+    ctx.beginPath();
+    ctx.arc(x, y, this.size * alpha * 1.5, 0, Math.PI * 2);
+    ctx.fillStyle = this.color;
+    ctx.globalAlpha = alpha * 0.9;
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+}
+
+// ─── FORMA DO CÉREBRO ─────────────────────────────────────────────────────────
+function brainShape(t) {
+  // Forma aproximada de cérebro humano visto de cima
+  const a = 1.0;
+  const b = 0.72;
+  // Hemisfério esquerdo e direito com sulco central
+  const x = a * Math.cos(t) * (1 + 0.15 * Math.cos(2 * t)) * (1 - 0.08 * Math.abs(Math.sin(t)));
+  const y = b * Math.sin(t) * (1 + 0.1 * Math.cos(t));
+  return { x, y };
+}
+
+function isInsideBrain(nx, ny, scale) {
+  // Verifica se o ponto está dentro da forma do cérebro
+  const dx = (nx - cx) / scale;
+  const dy = (ny - cy) / (scale * 0.72);
+  const r = Math.sqrt(dx * dx + dy * dy);
+  // Forma oval com lóbulos
+  const angle = Math.atan2(dy, dx);
+  const boundary = 0.88 + 0.12 * Math.cos(2 * angle) + 0.05 * Math.cos(4 * angle);
+  return r < boundary;
+}
+
+function buildBrain() {
+  nodes = [];
+  connections = [];
+  synapses = [];
+
+  const scale = Math.min(W, H) * 0.38;
+
+  // Gerar nós por região
+  REGIONS.forEach(region => {
+    const regionNodes = [];
+    const centerX = cx + region.rx * scale * 1.1;
+    const centerY = cy + region.ry * scale * 1.1;
+    const spread = scale * 0.12 * region.size;
+
+    for (let i = 0; i < region.nodeCount; i++) {
+      let nx, ny, attempts = 0;
+      do {
+        const angle = Math.random() * Math.PI * 2;
+        const dist = Math.random() * spread;
+        nx = centerX + Math.cos(angle) * dist;
+        ny = centerY + Math.sin(angle) * dist;
+        attempts++;
+      } while (!isInsideBrain(nx, ny, scale) && attempts < 30);
+
+      const nodeSize = i === 0
+        ? 4 + region.size * 2
+        : 2 + Math.random() * 2.5;
+
+      const n = new Node(nx, ny, region, nodeSize);
+      regionNodes.push(n);
+      nodes.push(n);
+    }
+
+    // Conectar nós dentro da região
+    for (let i = 0; i < regionNodes.length; i++) {
+      for (let j = i + 1; j < regionNodes.length; j++) {
+        if (Math.random() < 0.55) {
+          connections.push([regionNodes[i], regionNodes[j]]);
+        }
+      }
+    }
+  });
+
+  // Conectar regiões entre si (sinapses inter-regionais)
+  const interConnections = [
+    ['router', 'llm'],
+    ['router', 'agents'],
+    ['router', 'memory'],
+    ['agents', 'memory'],
+    ['agents', 'gateway'],
+    ['gateway', 'llm'],
+    ['gateway', 'interface'],
+    ['interface', 'router'],
+    ['watchdog', 'gateway'],
+    ['watchdog', 'infra'],
+    ['billing', 'router'],
+    ['billing', 'watchdog'],
+    ['discord', 'llm'],
+    ['discord', 'agents'],
+    ['infra', 'gateway'],
+    ['memory', 'llm'],
+  ];
+
+  interConnections.forEach(([aId, bId]) => {
+    const aRegion = REGIONS.find(r => r.id === aId);
+    const bRegion = REGIONS.find(r => r.id === bId);
+    const aNodes = nodes.filter(n => n.region === aRegion);
+    const bNodes = nodes.filter(n => n.region === bRegion);
+    if (aNodes.length && bNodes.length) {
+      const a = aNodes[Math.floor(Math.random() * aNodes.length)];
+      const b = bNodes[Math.floor(Math.random() * bNodes.length)];
+      connections.push([a, b]);
+    }
+  });
+}
+
+// ─── RENDERIZAÇÃO DO CONTORNO DO CÉREBRO ──────────────────────────────────────
+function drawBrainOutline() {
+  const scale = Math.min(W, H) * 0.38;
+
+  // Sulco central (fissura longitudinal)
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - scale * 0.72);
+  ctx.bezierCurveTo(
+    cx + scale * 0.04, cy - scale * 0.2,
+    cx - scale * 0.04, cy + scale * 0.2,
+    cx, cy + scale * 0.72
+  );
+  ctx.strokeStyle = '#00ffc811';
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // Contorno do cérebro
+  ctx.beginPath();
+  for (let t = 0; t <= Math.PI * 2; t += 0.02) {
+    const p = brainShape(t);
+    const x = cx + p.x * scale;
+    const y = cy + p.y * scale;
+    if (t === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+
+  // Gradiente de borda
+  const grd = ctx.createRadialGradient(cx, cy, scale * 0.3, cx, cy, scale * 1.1);
+  grd.addColorStop(0, 'transparent');
+  grd.addColorStop(0.7, '#00ffc803');
+  grd.addColorStop(1, '#00ffc811');
+  ctx.fillStyle = grd;
+  ctx.fill();
+
+  ctx.strokeStyle = '#00ffc822';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // Sulcos secundários (giros cerebrais)
+  const sulcos = [
+    { cx: -0.2, cy: -0.3, rx: 0.18, ry: 0.08, rot: -0.3 },
+    { cx: 0.22, cy: -0.28, rx: 0.15, ry: 0.07, rot: 0.4 },
+    { cx: -0.3, cy: 0.1, rx: 0.12, ry: 0.06, rot: -0.1 },
+    { cx: 0.28, cy: 0.15, rx: 0.14, ry: 0.06, rot: 0.2 },
+    { cx: 0, cy: 0.3, rx: 0.2, ry: 0.07, rot: 0 },
+    { cx: -0.1, cy: -0.1, rx: 0.1, ry: 0.05, rot: 0.5 },
+    { cx: 0.15, cy: 0.05, rx: 0.12, ry: 0.05, rot: -0.3 },
+  ];
+
+  sulcos.forEach(s => {
+    ctx.save();
+    ctx.translate(cx + s.cx * scale, cy + s.cy * scale);
+    ctx.rotate(s.rot);
+    ctx.beginPath();
+    ctx.ellipse(0, 0, s.rx * scale, s.ry * scale, 0, 0, Math.PI * 2);
+    ctx.strokeStyle = '#00ffc808';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    ctx.restore();
+  });
+}
+
+// ─── LABELS DAS REGIÕES ───────────────────────────────────────────────────────
+function drawRegionLabels() {
+  const scale = Math.min(W, H) * 0.38;
+
+  REGIONS.forEach(region => {
+    const x = cx + region.rx * scale * 1.1;
+    const y = cy + region.ry * scale * 1.1;
+
+    ctx.save();
+    ctx.font = '9px Courier New';
+    ctx.letterSpacing = '1px';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = region.color + 'aa';
+    ctx.shadowColor = region.glow;
+    ctx.shadowBlur = 8;
+    ctx.fillText(region.name.toUpperCase(), x, y - 22);
+    ctx.restore();
+  });
+}
+
+// ─── CONEXÕES ESTÁTICAS ───────────────────────────────────────────────────────
+function drawConnections() {
+  connections.forEach(([a, b]) => {
+    const dist = Math.hypot(a.x - b.x, a.y - b.y);
+    const maxDist = 180;
+    if (dist > maxDist) return;
+
+    const alpha = (1 - dist / maxDist) * 0.18;
+    const sameRegion = a.region === b.region;
+    const color = sameRegion ? a.region.color : '#ffffff';
+
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y);
+    ctx.strokeStyle = color + Math.floor(alpha * 255).toString(16).padStart(2, '0');
+    ctx.lineWidth = sameRegion ? 0.8 : 0.4;
+    ctx.stroke();
+  });
+}
+
+// ─── DISPARO DE SINAPSES ──────────────────────────────────────────────────────
+let lastSynapseTime = 0;
+function maybeFiringSynapse(timestamp) {
+  if (timestamp - lastSynapseTime < 60) return;
+  lastSynapseTime = timestamp;
+
+  if (synapses.length < 60 && Math.random() < 0.7) {
+    const conn = connections[Math.floor(Math.random() * connections.length)];
+    if (conn) {
+      const [a, b] = Math.random() < 0.5 ? conn : [conn[1], conn[0]];
+      synapses.push(new Synapse(a, b));
+    }
+  }
+}
+
+// ─── INTERATIVIDADE ───────────────────────────────────────────────────────────
+let hoveredRegion = null;
+canvas.addEventListener('mousemove', (e) => {
+  const mx = e.clientX;
+  const my = e.clientY;
+  const scale = Math.min(W, H) * 0.38;
+
+  let closest = null;
+  let closestDist = Infinity;
+
+  REGIONS.forEach(region => {
+    const rx = cx + region.rx * scale * 1.1;
+    const ry = cy + region.ry * scale * 1.1;
+    const dist = Math.hypot(mx - rx, my - ry);
+    if (dist < closestDist && dist < scale * 0.18) {
+      closestDist = dist;
+      closest = region;
+    }
+  });
+
+  hoveredRegion = closest;
+
+  if (closest) {
+    tooltip.style.opacity = '1';
+    tooltip.style.left = (mx + 20) + 'px';
+    tooltip.style.top = (my - 20) + 'px';
+    document.getElementById('tt-name').textContent = closest.name;
+    document.getElementById('tt-region').textContent = '↳ ' + closest.brainRegion;
+    document.getElementById('tt-desc').textContent = closest.desc;
+    document.getElementById('tt-nodes').textContent = closest.nodes;
+
+    // Ajustar posição para não sair da tela
+    const rect = tooltip.getBoundingClientRect();
+    if (rect.right > W - 10) tooltip.style.left = (mx - rect.width - 20) + 'px';
+    if (rect.bottom > H - 10) tooltip.style.top = (my - rect.height) + 'px';
+  } else {
+    tooltip.style.opacity = '0';
+  }
+});
+
+canvas.addEventListener('click', (e) => {
+  if (hoveredRegion) {
+    // Disparar burst de sinapses na região clicada
+    const regionNodes = nodes.filter(n => n.region === hoveredRegion);
+    for (let i = 0; i < 8; i++) {
+      const a = regionNodes[Math.floor(Math.random() * regionNodes.length)];
+      const b = nodes[Math.floor(Math.random() * nodes.length)];
+      if (a && b && a !== b) {
+        synapses.push(new Synapse(a, b));
+      }
+    }
+  }
+});
+
+// ─── LOOP PRINCIPAL ───────────────────────────────────────────────────────────
+let frame = 0;
+function animate(timestamp) {
+  requestAnimationFrame(animate);
+  frame++;
+
+  // Fundo com fade
+  ctx.fillStyle = 'rgba(2, 4, 8, 0.15)';
+  ctx.fillRect(0, 0, W, H);
+
+  drawBrainOutline();
+  drawConnections();
+
+  // Atualizar e desenhar nós
+  nodes.forEach(n => {
+    n.update();
+
+    // Highlight se região hovered
+    if (hoveredRegion && n.region === hoveredRegion) {
+      n.size = n.baseSize * 1.6;
+    }
+
+    n.draw();
+  });
+
+  // Sinapses
+  maybeFiringSynapse(timestamp);
+  synapses = synapses.filter(s => s.alive);
+  synapses.forEach(s => { s.update(); s.draw(); });
+
+  drawRegionLabels();
+
+  // Contador de sinapses por segundo
+  const now = Date.now();
+  if (now - lastSecond >= 1000) {
+    synapseCountPerSec = synapseFireCount;
+    synapseFireCount = 0;
+    lastSecond = now;
+    document.getElementById('synapse-count').textContent = synapseCountPerSec;
+  }
+}
+
+buildBrain();
+animate(0);
+</script>
+</body>
+</html>
